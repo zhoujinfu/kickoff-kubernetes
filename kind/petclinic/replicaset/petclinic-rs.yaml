@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: petclinic
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: petclinic
+      version: v1.0.0
+  template:
+    metadata:
+      labels:
+        app: petclinic
+        version: v1.0.0
+    spec:
+      containers:
+        - name: petclinic
+          image: spring2go/spring-petclinic:1.0.0.RELEASE
