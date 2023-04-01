@@ -18,6 +18,15 @@
 # Access #2
 # See https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
 
+# https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
+# 1. Create a Service Account
+# 2. Creating a ClusterRoleBinding
+# 3. Getting a Bearer Token
+# `kubectl -n kubernetes-dashboard create token admin-user`
+# 4. Clean up
+# `kubectl -n kubernetes-dashboard delete serviceaccount admin-user`
+# `kubectl -n kubernetes-dashboard delete clusterrolebinding admin-user`
+
 apiVersion: v1
 kind: Namespace
 metadata:
