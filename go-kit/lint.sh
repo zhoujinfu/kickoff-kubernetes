@@ -1,0 +1,1 @@
+pnpx case-police "**/*.md" --fix
