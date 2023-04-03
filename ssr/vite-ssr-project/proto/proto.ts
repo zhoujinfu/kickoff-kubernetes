@@ -1,11 +1,11 @@
 import path from 'path'
 import grpc from '@grpc/grpc-js'
 import ProtoLoader from '@grpc/proto-loader'
-import { root } from '~/server/root'
 import type { ProtoGrpcType } from './helloworld'
 
 const helloWorldDefinition = ProtoLoader.loadSync(
-  path.join(root, './proto/helloworld.proto'),
+  // NOTE: vite-plugin-cp will cp all the proto files into dist/server/proto
+  path.resolve('./proto/helloworld.proto'),
   {
     keepCase: true,
     longs: String,
