@@ -5,7 +5,7 @@ import type { ProtoGrpcType } from './helloworld'
 
 const helloWorldDefinition = ProtoLoader.loadSync(
   // NOTE: vite-plugin-cp will cp all the proto files into dist/server/proto
-  path.resolve('./proto/helloworld.proto'),
+  path.resolve('./idl/server/helloworld.proto'),
   {
     keepCase: true,
     longs: String,

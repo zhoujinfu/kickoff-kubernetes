@@ -17,8 +17,8 @@ const config: UserConfig = {
       hook: 'writeBundle',
       targets: [
         { 
-          src: './proto/*.proto',
-          dest: './dist/server/proto',
+          src: './idl/**/*.proto',
+          dest: './dist/server/idl',
           rename: '',
         }
       ],

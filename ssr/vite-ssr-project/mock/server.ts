@@ -92,7 +92,7 @@ function main(protoPath: string, pkgName: string, svcName: string) {
 }
 
 main(
-  path.resolve('./proto/helloworld.proto'),
+  path.resolve('./idl/server/helloworld.proto'),
   'helloworld',
   'Greeter',
 )

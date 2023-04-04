@@ -1,4 +1,4 @@
-// Original file: proto/helloworld.proto
+// Original file: idl/server/helloworld.proto
 
 
 export interface HelloRequest {
