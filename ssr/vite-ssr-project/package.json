@@ -1,7 +1,7 @@
 {
   "scripts": {
     "idl": ". proto/gentypes.sh && . proto_web/gen.sh",
-    "dev": "concurrently --prefix \"{name}-{pid}\" --names \" MOCK,  DEV, ENVOY\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen\" \"pnpm run mock\" \"pnpm run server\" \"pnpm run envoy\"",
+    "dev": "concurrently --prefix \"{name}-{pid}\" --names \"mock,dev,envoy\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen\" \"pnpm run mock\" \"pnpm run server\" \"pnpm run envoy\"",
     "envoy": "envoy -c ./proto_web/envoy.yaml",
     "mock": "nodemon --watch ./mock ./mock/server.ts",
     "prod": "pnpm run build && pnpm run server:prod",
