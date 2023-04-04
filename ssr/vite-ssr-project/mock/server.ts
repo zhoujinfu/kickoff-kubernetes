@@ -75,8 +75,10 @@ function main(protoPath: string, pkgName: string, svcName: string) {
   // 1. init
   const implementations = {
     SayHello: (call: any, callback: any) => {
+      const message = 'GO-the response message: ' + call.request.name
+      console.log('Reponse: ' + message)
       const response: any = {
-        message: 'GO-the response message: ' + call.request.name,
+        message,
       }
       callback(null, response)
     }

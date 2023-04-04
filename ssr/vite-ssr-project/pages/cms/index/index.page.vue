@@ -7,7 +7,8 @@
 import Welcome from '../components/Welcome.vue'
 import { sayHello } from '~/proto_web/index'
 
-function handleEcho() {
-  sayHello('BBaa.')
+async function handleEcho() {
+  const resp: any = await sayHello('BBaa.')
+  console.log(resp.array)
 }
 </script>

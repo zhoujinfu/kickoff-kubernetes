@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "dev": "concurrently --prefix \"{name}-{pid}\" --names \" MOCK,  DEV, ENVOY\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen\" \"pnpm run mock\" \"pnpm run server\" \"envoy -c ./proto_web/envoy.yaml\"",
+    "idl": ". proto/gentypes.sh && . proto_web/gen.sh",
+    "dev": "concurrently --prefix \"{name}-{pid}\" --names \" MOCK,  DEV, ENVOY\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen\" \"pnpm run mock\" \"pnpm run server\" \"pnpm run envoy\"",
+    "envoy": "envoy -c ./proto_web/envoy.yaml",
     "mock": "nodemon --watch ./mock ./mock/server.ts",
     "prod": "pnpm run build && pnpm run server:prod",
     "build": "vite build",
@@ -21,6 +23,7 @@
     "compression": "^1.7.4",
     "concurrently": "^8.0.1",
     "cross-env": "^7.0.3",
+    "esbuild": "^0.17.15",
     "express": "^4.18.1",
     "google-protobuf": "^3.21.2",
     "grpc-web": "^1.4.2",

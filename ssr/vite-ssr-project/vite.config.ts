@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import inspect from 'vite-plugin-inspect'
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
 import cp from 'vite-plugin-cp'
+import { grpcWebImportFixPlugins } from './scripts/grpcweb-import-fix-plugins'
 
 const config: UserConfig = {
   plugins: [
@@ -23,6 +24,7 @@ const config: UserConfig = {
         }
       ],
     }),
+    ...grpcWebImportFixPlugins(),
   ],
   resolve: {
     alias: {
