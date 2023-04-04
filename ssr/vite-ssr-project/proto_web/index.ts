@@ -1,9 +1,9 @@
-import * as proto from './idl/client/HelloworldServiceClientPb'
+import { GreeterClient } from './idl/client/HelloworldServiceClientPb'
 import helloworld from './idl/client/helloworld_pb'
 
 export async function sayHello(name: string) {
   console.log('aaa', helloworld.HelloRequest)
-  const client = new proto.GreeterClient('http://localhost:8080')
+  const client = new GreeterClient('http://localhost:8080')
   return new Promise((resolve, reject) => {
     const request = new helloworld.HelloRequest()
     request.setName(name)

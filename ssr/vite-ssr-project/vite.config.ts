@@ -5,7 +5,10 @@ import { fileURLToPath } from 'url'
 import inspect from 'vite-plugin-inspect'
 import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
 import cp from 'vite-plugin-cp'
-import { grpcWebImportFixPlugins } from './scripts/grpcweb-import-fix-plugins'
+import { vitePlugins as fixVitePlugins } from './scripts/grpcweb-import-fix-plugins'
+import rollupCommonjs from '@rollup/plugin-commonjs'
+
+const [importVitePlugin, exportVitePlugin] = fixVitePlugins()
 
 const config: UserConfig = {
   plugins: [
@@ -24,8 +27,20 @@ const config: UserConfig = {
         }
       ],
     }),
-    ...grpcWebImportFixPlugins(),
+    importVitePlugin({
+      include: 'proto_web/idl/client/HelloworldServiceClientPb.ts',
+    }),
+    exportVitePlugin({
+      include: /proto_web\/idl\/client\/helloworld_pb\.js$/,
+    }),
   ],
+  build: {
+    rollupOptions: {
+      plugins: [
+        rollupCommonjs(),
+      ],
+    },
+  },
   resolve: {
     alias: {
       '~': fileURLToPath(new URL('./', import.meta.url)),

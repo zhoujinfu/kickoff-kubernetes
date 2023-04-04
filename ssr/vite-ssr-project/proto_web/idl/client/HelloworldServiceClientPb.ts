@@ -17,7 +17,7 @@
 
 import * as grpcWeb from 'grpc-web';
 
-import * as idl_client_helloworld_pb from '../../idl/client/helloworld_pb';
+import idl_client_helloworld_pb from '../../idl/client/helloworld_pb';
 
 
 export class GreeterClient {

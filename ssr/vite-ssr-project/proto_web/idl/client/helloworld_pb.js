@@ -326,3 +326,4 @@ proto.helloworld.HelloReply.prototype.setMessage = function(value) {
 
 
 goog.object.extend(exports, proto.helloworld);
+module.exports = exports;
