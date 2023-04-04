@@ -66,5 +66,3 @@ export const exportUnplugin = createUnplugin((options: Options) => ({
 
 export const vitePlugins = () => [importUnplugin.vite, exportUnplugin.vite]
 export const rollupPlugins = () => [importUnplugin.rollup, exportUnplugin.rollup]
-
-console.log(vitePlugins())
