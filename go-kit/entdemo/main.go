@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"entdemo/ent"
 	"entdemo/ent/user"
@@ -25,18 +26,20 @@ func main() {
 
 	var store Store
 	store = &sqlite3Store{client, context.Background()}
-	store = loggingMiddleware{store} // AOP
+	store = loggingMiddleware{store} // store AOP
 	var service UserService
 	service = userService{store}
-	service = emptyMiddleware{service} // AOP
+	service = emptyMiddleware{service} // service AOP
 
-	service.InsertWithNameAge("tinychou", 35)
-	service.QueryByName("tinychou")
+	service.InsertWithNameAge("admin", 30)
+	service.QueryByName("admin")
+	service.QueryByDeleted(true)
 }
 
 type UserService interface {
 	InsertWithNameAge(name string, age int) (*ent.User, error)
 	QueryByName(name string) (*ent.User, error)
+	QueryByDeleted(deleted bool) ([]*ent.User, error)
 }
 type userService struct{ store Store }
 
@@ -45,6 +48,9 @@ func (u userService) InsertWithNameAge(name string, age int) (*ent.User, error) 
 }
 func (u userService) QueryByName(name string) (*ent.User, error) {
 	return u.store.QueryUserByName(name)
+}
+func (u userService) QueryByDeleted(deleted bool) ([]*ent.User, error) {
+	return u.store.QueryUsersByDeleted(deleted)
 }
 
 type emptyMiddleware struct {
@@ -57,10 +63,14 @@ func (mw emptyMiddleware) InsertWithNameAge(name string, age int) (*ent.User, er
 func (mw emptyMiddleware) QueryByName(name string) (*ent.User, error) {
 	return mw.service.QueryByName(name)
 }
+func (mw emptyMiddleware) QueryByDeleted(deleted bool) ([]*ent.User, error) {
+	return mw.service.QueryByDeleted(deleted)
+}
 
 type Store interface {
 	InsertUser(name string, age int) (*ent.User, error)
 	QueryUserByName(name string) (*ent.User, error)
+	QueryUsersByDeleted(deleted bool) ([]*ent.User, error)
 }
 type sqlite3Store struct {
 	client *ent.Client
@@ -90,6 +100,15 @@ func (s *sqlite3Store) QueryUserByName(name string) (*ent.User, error) {
 	}
 	return u, nil
 }
+func (s *sqlite3Store) QueryUsersByDeleted(deleted bool) ([]*ent.User, error) {
+	zero := time.Time{}
+	q := s.client.User.Query()
+	if !deleted {
+		return q.Where(user.DeletedAt(zero)).All(s.ctx)
+	} else {
+		return q.Where(user.Not(user.DeletedAt(zero))).All(s.ctx)
+	}
+}
 
 type loggingMiddleware struct {
 	store Store
@@ -108,6 +127,15 @@ func (mw loggingMiddleware) QueryUserByName(name string) (*ent.User, error) {
 	u, err := mw.store.QueryUserByName(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed querying user: %w", err)
+	} else {
+		log.Println("user queried: ", u)
+	}
+	return u, err
+}
+func (mw loggingMiddleware) QueryUsersByDeleted(deleted bool) ([]*ent.User, error) {
+	u, err := mw.store.QueryUsersByDeleted(deleted)
+	if err != nil {
+		return nil, fmt.Errorf("failed quering users: %w", err)
 	} else {
 		log.Println("user queried: ", u)
 	}

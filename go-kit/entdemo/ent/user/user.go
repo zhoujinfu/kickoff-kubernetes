@@ -2,25 +2,58 @@
 
 package user
 
+import (
+	"time"
+)
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
+	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
+	FieldDeletedAt = "deleted_at"
 	// FieldAge holds the string denoting the age field in the database.
 	FieldAge = "age"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldPassowrd holds the string denoting the passowrd field in the database.
+	FieldPassowrd = "passowrd"
+	// EdgeCreatedBy holds the string denoting the created_by edge name in mutations.
+	EdgeCreatedBy = "created_by"
+	// EdgeUpdatedBy holds the string denoting the updated_by edge name in mutations.
+	EdgeUpdatedBy = "updated_by"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// CreatedByTable is the table that holds the created_by relation/edge. The primary key declared below.
+	CreatedByTable = "user_created_by"
+	// UpdatedByTable is the table that holds the updated_by relation/edge. The primary key declared below.
+	UpdatedByTable = "user_updated_by"
 )
 
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
+	FieldCreatedAt,
+	FieldUpdatedAt,
+	FieldDeletedAt,
 	FieldAge,
 	FieldName,
+	FieldPassowrd,
 }
+
+var (
+	// CreatedByPrimaryKey and CreatedByColumn2 are the table columns denoting the
+	// primary key for the created_by relation (M2M).
+	CreatedByPrimaryKey = []string{"user_id", "created_by_id"}
+	// UpdatedByPrimaryKey and UpdatedByColumn2 are the table columns denoting the
+	// primary key for the updated_by relation (M2M).
+	UpdatedByPrimaryKey = []string{"user_id", "updated_by_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -33,6 +66,14 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultDeletedAt holds the default value on creation for the "deleted_at" field.
+	DefaultDeletedAt func() time.Time
 	// AgeValidator is a validator for the "age" field. It is called by the builders before save.
 	AgeValidator func(int) error
 	// DefaultName holds the default value on creation for the "name" field.
