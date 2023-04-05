@@ -27,6 +27,7 @@ func main() {
 	store = &sqlite3Store{client, context.Background()}
 	store = loggingMiddleware{store}
 	store.InsertUser("tinychou", 35)
+	store.QueryUserByName("tinychou")
 }
 
 type Store interface {
@@ -45,19 +46,19 @@ func (s *sqlite3Store) InsertUser(name string, age int) (*ent.User, error) {
 		SetName(name).
 		Save(s.ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed creating user: %w", err)
+		return nil, err
 	}
 	return u, nil
 }
 func (s *sqlite3Store) QueryUserByName(name string) (*ent.User, error) {
 	u, err := s.client.User.
 		Query().
-		Where(user.Name("a8m2")).
+		Where(user.Name(name)).
 		// `Only` fails if no user found,
 		// or more than 1 user returned.
 		Only(s.ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed querying user: %w", err)
+		return nil, err
 	}
 	return u, nil
 }
@@ -68,14 +69,18 @@ type loggingMiddleware struct {
 
 func (mw loggingMiddleware) InsertUser(name string, age int) (*ent.User, error) {
 	u, err := mw.store.InsertUser(name, age)
-	if err == nil {
+	if err != nil {
+		return nil, fmt.Errorf("failed creating user: %w", err)
+	} else {
 		log.Println("user was created: ", u)
 	}
 	return u, err
 }
 func (mw loggingMiddleware) QueryUserByName(name string) (*ent.User, error) {
 	u, err := mw.store.QueryUserByName(name)
-	if err == nil {
+	if err != nil {
+		return nil, fmt.Errorf("failed querying user: %w", err)
+	} else {
 		log.Println("user queried: ", u)
 	}
 	return u, err
