@@ -14,6 +14,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime},
+		{Name: "created_by", Type: field.TypeInt, Default: 0},
+		{Name: "updated_by", Type: field.TypeInt, Default: 0},
 		{Name: "age", Type: field.TypeInt},
 		{Name: "name", Type: field.TypeString, Default: "unknown"},
 		{Name: "passowrd", Type: field.TypeString, Nullable: true, Default: map[string]schema.Expr{"mysql": "TO_BASE64('123456')", "postgres": "md5('123456')", "sqlite3": "hex('123456')"}},
@@ -36,67 +38,11 @@ var (
 			},
 		},
 	}
-	// UserCreatedByColumns holds the columns for the "user_created_by" table.
-	UserCreatedByColumns = []*schema.Column{
-		{Name: "user_id", Type: field.TypeInt},
-		{Name: "created_by_id", Type: field.TypeInt},
-	}
-	// UserCreatedByTable holds the schema information for the "user_created_by" table.
-	UserCreatedByTable = &schema.Table{
-		Name:       "user_created_by",
-		Columns:    UserCreatedByColumns,
-		PrimaryKey: []*schema.Column{UserCreatedByColumns[0], UserCreatedByColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_created_by_user_id",
-				Columns:    []*schema.Column{UserCreatedByColumns[0]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "user_created_by_created_by_id",
-				Columns:    []*schema.Column{UserCreatedByColumns[1]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// UserUpdatedByColumns holds the columns for the "user_updated_by" table.
-	UserUpdatedByColumns = []*schema.Column{
-		{Name: "user_id", Type: field.TypeInt},
-		{Name: "updated_by_id", Type: field.TypeInt},
-	}
-	// UserUpdatedByTable holds the schema information for the "user_updated_by" table.
-	UserUpdatedByTable = &schema.Table{
-		Name:       "user_updated_by",
-		Columns:    UserUpdatedByColumns,
-		PrimaryKey: []*schema.Column{UserUpdatedByColumns[0], UserUpdatedByColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_updated_by_user_id",
-				Columns:    []*schema.Column{UserUpdatedByColumns[0]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "user_updated_by_updated_by_id",
-				Columns:    []*schema.Column{UserUpdatedByColumns[1]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		UsersTable,
-		UserCreatedByTable,
-		UserUpdatedByTable,
 	}
 )
 
 func init() {
-	UserCreatedByTable.ForeignKeys[0].RefTable = UsersTable
-	UserCreatedByTable.ForeignKeys[1].RefTable = UsersTable
-	UserUpdatedByTable.ForeignKeys[0].RefTable = UsersTable
-	UserUpdatedByTable.ForeignKeys[1].RefTable = UsersTable
 }

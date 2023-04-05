@@ -31,9 +31,9 @@ func main() {
 	service = userService{store}
 	service = emptyMiddleware{service} // service AOP
 
-	service.InsertWithNameAge("admin", 30)
-	service.QueryByName("admin")
-	service.QueryByDeleted(true)
+	service.InsertWithNameAge("admin1", 31)
+	// service.QueryByName("admin")
+	// service.QueryByDeleted(true)
 }
 
 type UserService interface {

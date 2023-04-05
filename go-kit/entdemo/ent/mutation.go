@@ -30,26 +30,24 @@ const (
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *int
-	created_at        *time.Time
-	updated_at        *time.Time
-	deleted_at        *time.Time
-	age               *int
-	addage            *int
-	name              *string
-	passowrd          *string
-	clearedFields     map[string]struct{}
-	created_by        map[int]struct{}
-	removedcreated_by map[int]struct{}
-	clearedcreated_by bool
-	updated_by        map[int]struct{}
-	removedupdated_by map[int]struct{}
-	clearedupdated_by bool
-	done              bool
-	oldValue          func(context.Context) (*User, error)
-	predicates        []predicate.User
+	op            Op
+	typ           string
+	id            *int
+	created_at    *time.Time
+	updated_at    *time.Time
+	deleted_at    *time.Time
+	created_by    *int
+	addcreated_by *int
+	updated_by    *int
+	addupdated_by *int
+	age           *int
+	addage        *int
+	name          *string
+	passowrd      *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*User, error)
+	predicates    []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -258,6 +256,118 @@ func (m *UserMutation) ResetDeletedAt() {
 	m.deleted_at = nil
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (m *UserMutation) SetCreatedBy(i int) {
+	m.created_by = &i
+	m.addcreated_by = nil
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *UserMutation) CreatedBy() (r int, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldCreatedBy(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// AddCreatedBy adds i to the "created_by" field.
+func (m *UserMutation) AddCreatedBy(i int) {
+	if m.addcreated_by != nil {
+		*m.addcreated_by += i
+	} else {
+		m.addcreated_by = &i
+	}
+}
+
+// AddedCreatedBy returns the value that was added to the "created_by" field in this mutation.
+func (m *UserMutation) AddedCreatedBy() (r int, exists bool) {
+	v := m.addcreated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *UserMutation) ResetCreatedBy() {
+	m.created_by = nil
+	m.addcreated_by = nil
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *UserMutation) SetUpdatedBy(i int) {
+	m.updated_by = &i
+	m.addupdated_by = nil
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *UserMutation) UpdatedBy() (r int, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldUpdatedBy(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// AddUpdatedBy adds i to the "updated_by" field.
+func (m *UserMutation) AddUpdatedBy(i int) {
+	if m.addupdated_by != nil {
+		*m.addupdated_by += i
+	} else {
+		m.addupdated_by = &i
+	}
+}
+
+// AddedUpdatedBy returns the value that was added to the "updated_by" field in this mutation.
+func (m *UserMutation) AddedUpdatedBy() (r int, exists bool) {
+	v := m.addupdated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *UserMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	m.addupdated_by = nil
+}
+
 // SetAge sets the "age" field.
 func (m *UserMutation) SetAge(i int) {
 	m.age = &i
@@ -399,114 +509,6 @@ func (m *UserMutation) ResetPassowrd() {
 	delete(m.clearedFields, user.FieldPassowrd)
 }
 
-// AddCreatedByIDs adds the "created_by" edge to the User entity by ids.
-func (m *UserMutation) AddCreatedByIDs(ids ...int) {
-	if m.created_by == nil {
-		m.created_by = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.created_by[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCreatedBy clears the "created_by" edge to the User entity.
-func (m *UserMutation) ClearCreatedBy() {
-	m.clearedcreated_by = true
-}
-
-// CreatedByCleared reports if the "created_by" edge to the User entity was cleared.
-func (m *UserMutation) CreatedByCleared() bool {
-	return m.clearedcreated_by
-}
-
-// RemoveCreatedByIDs removes the "created_by" edge to the User entity by IDs.
-func (m *UserMutation) RemoveCreatedByIDs(ids ...int) {
-	if m.removedcreated_by == nil {
-		m.removedcreated_by = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.created_by, ids[i])
-		m.removedcreated_by[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCreatedBy returns the removed IDs of the "created_by" edge to the User entity.
-func (m *UserMutation) RemovedCreatedByIDs() (ids []int) {
-	for id := range m.removedcreated_by {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CreatedByIDs returns the "created_by" edge IDs in the mutation.
-func (m *UserMutation) CreatedByIDs() (ids []int) {
-	for id := range m.created_by {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCreatedBy resets all changes to the "created_by" edge.
-func (m *UserMutation) ResetCreatedBy() {
-	m.created_by = nil
-	m.clearedcreated_by = false
-	m.removedcreated_by = nil
-}
-
-// AddUpdatedByIDs adds the "updated_by" edge to the User entity by ids.
-func (m *UserMutation) AddUpdatedByIDs(ids ...int) {
-	if m.updated_by == nil {
-		m.updated_by = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.updated_by[ids[i]] = struct{}{}
-	}
-}
-
-// ClearUpdatedBy clears the "updated_by" edge to the User entity.
-func (m *UserMutation) ClearUpdatedBy() {
-	m.clearedupdated_by = true
-}
-
-// UpdatedByCleared reports if the "updated_by" edge to the User entity was cleared.
-func (m *UserMutation) UpdatedByCleared() bool {
-	return m.clearedupdated_by
-}
-
-// RemoveUpdatedByIDs removes the "updated_by" edge to the User entity by IDs.
-func (m *UserMutation) RemoveUpdatedByIDs(ids ...int) {
-	if m.removedupdated_by == nil {
-		m.removedupdated_by = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.updated_by, ids[i])
-		m.removedupdated_by[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUpdatedBy returns the removed IDs of the "updated_by" edge to the User entity.
-func (m *UserMutation) RemovedUpdatedByIDs() (ids []int) {
-	for id := range m.removedupdated_by {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UpdatedByIDs returns the "updated_by" edge IDs in the mutation.
-func (m *UserMutation) UpdatedByIDs() (ids []int) {
-	for id := range m.updated_by {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUpdatedBy resets all changes to the "updated_by" edge.
-func (m *UserMutation) ResetUpdatedBy() {
-	m.updated_by = nil
-	m.clearedupdated_by = false
-	m.removedupdated_by = nil
-}
-
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -541,7 +543,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -550,6 +552,12 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.deleted_at != nil {
 		fields = append(fields, user.FieldDeletedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, user.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, user.FieldUpdatedBy)
 	}
 	if m.age != nil {
 		fields = append(fields, user.FieldAge)
@@ -574,6 +582,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case user.FieldDeletedAt:
 		return m.DeletedAt()
+	case user.FieldCreatedBy:
+		return m.CreatedBy()
+	case user.FieldUpdatedBy:
+		return m.UpdatedBy()
 	case user.FieldAge:
 		return m.Age()
 	case user.FieldName:
@@ -595,6 +607,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldUpdatedAt(ctx)
 	case user.FieldDeletedAt:
 		return m.OldDeletedAt(ctx)
+	case user.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case user.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
 	case user.FieldAge:
 		return m.OldAge(ctx)
 	case user.FieldName:
@@ -631,6 +647,20 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDeletedAt(v)
 		return nil
+	case user.FieldCreatedBy:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case user.FieldUpdatedBy:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
 	case user.FieldAge:
 		v, ok := value.(int)
 		if !ok {
@@ -660,6 +690,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *UserMutation) AddedFields() []string {
 	var fields []string
+	if m.addcreated_by != nil {
+		fields = append(fields, user.FieldCreatedBy)
+	}
+	if m.addupdated_by != nil {
+		fields = append(fields, user.FieldUpdatedBy)
+	}
 	if m.addage != nil {
 		fields = append(fields, user.FieldAge)
 	}
@@ -671,6 +707,10 @@ func (m *UserMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case user.FieldCreatedBy:
+		return m.AddedCreatedBy()
+	case user.FieldUpdatedBy:
+		return m.AddedUpdatedBy()
 	case user.FieldAge:
 		return m.AddedAge()
 	}
@@ -682,6 +722,20 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *UserMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case user.FieldCreatedBy:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedBy(v)
+		return nil
+	case user.FieldUpdatedBy:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedBy(v)
+		return nil
 	case user.FieldAge:
 		v, ok := value.(int)
 		if !ok {
@@ -734,6 +788,12 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldDeletedAt:
 		m.ResetDeletedAt()
 		return nil
+	case user.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case user.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
 	case user.FieldAge:
 		m.ResetAge()
 		return nil
@@ -749,110 +809,48 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.created_by != nil {
-		edges = append(edges, user.EdgeCreatedBy)
-	}
-	if m.updated_by != nil {
-		edges = append(edges, user.EdgeUpdatedBy)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case user.EdgeCreatedBy:
-		ids := make([]ent.Value, 0, len(m.created_by))
-		for id := range m.created_by {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeUpdatedBy:
-		ids := make([]ent.Value, 0, len(m.updated_by))
-		for id := range m.updated_by {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedcreated_by != nil {
-		edges = append(edges, user.EdgeCreatedBy)
-	}
-	if m.removedupdated_by != nil {
-		edges = append(edges, user.EdgeUpdatedBy)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case user.EdgeCreatedBy:
-		ids := make([]ent.Value, 0, len(m.removedcreated_by))
-		for id := range m.removedcreated_by {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeUpdatedBy:
-		ids := make([]ent.Value, 0, len(m.removedupdated_by))
-		for id := range m.removedupdated_by {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedcreated_by {
-		edges = append(edges, user.EdgeCreatedBy)
-	}
-	if m.clearedupdated_by {
-		edges = append(edges, user.EdgeUpdatedBy)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
-	switch name {
-	case user.EdgeCreatedBy:
-		return m.clearedcreated_by
-	case user.EdgeUpdatedBy:
-		return m.clearedupdated_by
-	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
-	switch name {
-	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
-	switch name {
-	case user.EdgeCreatedBy:
-		m.ResetCreatedBy()
-		return nil
-	case user.EdgeUpdatedBy:
-		m.ResetUpdatedBy()
-		return nil
-	}
 	return fmt.Errorf("unknown User edge %s", name)
 }

@@ -15,6 +15,8 @@ func init() {
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
+	userMixinFields1 := userMixin[1].Fields()
+	_ = userMixinFields1
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
@@ -31,6 +33,14 @@ func init() {
 	userDescDeletedAt := userMixinFields0[2].Descriptor()
 	// user.DefaultDeletedAt holds the default value on creation for the deleted_at field.
 	user.DefaultDeletedAt = userDescDeletedAt.Default.(func() time.Time)
+	// userDescCreatedBy is the schema descriptor for created_by field.
+	userDescCreatedBy := userMixinFields1[0].Descriptor()
+	// user.DefaultCreatedBy holds the default value on creation for the created_by field.
+	user.DefaultCreatedBy = userDescCreatedBy.Default.(int)
+	// userDescUpdatedBy is the schema descriptor for updated_by field.
+	userDescUpdatedBy := userMixinFields1[1].Descriptor()
+	// user.DefaultUpdatedBy holds the default value on creation for the updated_by field.
+	user.DefaultUpdatedBy = userDescUpdatedBy.Default.(int)
 	// userDescAge is the schema descriptor for age field.
 	userDescAge := userFields[0].Descriptor()
 	// user.AgeValidator is a validator for the "age" field. It is called by the builders before save.

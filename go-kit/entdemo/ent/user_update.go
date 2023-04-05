@@ -48,6 +48,27 @@ func (uu *UserUpdate) SetNillableDeletedAt(t *time.Time) *UserUpdate {
 	return uu
 }
 
+// SetUpdatedBy sets the "updated_by" field.
+func (uu *UserUpdate) SetUpdatedBy(i int) *UserUpdate {
+	uu.mutation.ResetUpdatedBy()
+	uu.mutation.SetUpdatedBy(i)
+	return uu
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUpdatedBy(i *int) *UserUpdate {
+	if i != nil {
+		uu.SetUpdatedBy(*i)
+	}
+	return uu
+}
+
+// AddUpdatedBy adds i to the "updated_by" field.
+func (uu *UserUpdate) AddUpdatedBy(i int) *UserUpdate {
+	uu.mutation.AddUpdatedBy(i)
+	return uu
+}
+
 // SetAge sets the "age" field.
 func (uu *UserUpdate) SetAge(i int) *UserUpdate {
 	uu.mutation.ResetAge()
@@ -164,6 +185,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.DeletedAt(); ok {
 		_spec.SetField(user.FieldDeletedAt, field.TypeTime, value)
 	}
+	if value, ok := uu.mutation.UpdatedBy(); ok {
+		_spec.SetField(user.FieldUpdatedBy, field.TypeInt, value)
+	}
+	if value, ok := uu.mutation.AddedUpdatedBy(); ok {
+		_spec.AddField(user.FieldUpdatedBy, field.TypeInt, value)
+	}
 	if value, ok := uu.mutation.Age(); ok {
 		_spec.SetField(user.FieldAge, field.TypeInt, value)
 	}
@@ -216,6 +243,27 @@ func (uuo *UserUpdateOne) SetNillableDeletedAt(t *time.Time) *UserUpdateOne {
 	if t != nil {
 		uuo.SetDeletedAt(*t)
 	}
+	return uuo
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (uuo *UserUpdateOne) SetUpdatedBy(i int) *UserUpdateOne {
+	uuo.mutation.ResetUpdatedBy()
+	uuo.mutation.SetUpdatedBy(i)
+	return uuo
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUpdatedBy(i *int) *UserUpdateOne {
+	if i != nil {
+		uuo.SetUpdatedBy(*i)
+	}
+	return uuo
+}
+
+// AddUpdatedBy adds i to the "updated_by" field.
+func (uuo *UserUpdateOne) AddUpdatedBy(i int) *UserUpdateOne {
+	uuo.mutation.AddUpdatedBy(i)
 	return uuo
 }
 
@@ -364,6 +412,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.DeletedAt(); ok {
 		_spec.SetField(user.FieldDeletedAt, field.TypeTime, value)
+	}
+	if value, ok := uuo.mutation.UpdatedBy(); ok {
+		_spec.SetField(user.FieldUpdatedBy, field.TypeInt, value)
+	}
+	if value, ok := uuo.mutation.AddedUpdatedBy(); ok {
+		_spec.AddField(user.FieldUpdatedBy, field.TypeInt, value)
 	}
 	if value, ok := uuo.mutation.Age(); ok {
 		_spec.SetField(user.FieldAge, field.TypeInt, value)

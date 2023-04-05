@@ -22,44 +22,16 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Time for soft-deleting, all indices should care about this.
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	// User ID who created the record.
+	CreatedBy int `json:"created_by,omitempty"`
+	// User ID who updated the record.
+	UpdatedBy int `json:"updated_by,omitempty"`
 	// Age of the user.
 	Age int `json:"age,omitempty"`
 	// Name of the user, defaults to "unknown".
 	Name string `json:"name,omitempty"`
 	// Password of the user.
 	Passowrd string `json:"-"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges UserEdges `json:"edges"`
-}
-
-// UserEdges holds the relations/edges for other nodes in the graph.
-type UserEdges struct {
-	// User ID who created the user.
-	CreatedBy []*User `json:"created_by,omitempty"`
-	// User ID who updatedd the user.
-	UpdatedBy []*User `json:"updated_by,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// CreatedByOrErr returns the CreatedBy value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) CreatedByOrErr() ([]*User, error) {
-	if e.loadedTypes[0] {
-		return e.CreatedBy, nil
-	}
-	return nil, &NotLoadedError{edge: "created_by"}
-}
-
-// UpdatedByOrErr returns the UpdatedBy value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) UpdatedByOrErr() ([]*User, error) {
-	if e.loadedTypes[1] {
-		return e.UpdatedBy, nil
-	}
-	return nil, &NotLoadedError{edge: "updated_by"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -67,7 +39,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldID, user.FieldAge:
+		case user.FieldID, user.FieldCreatedBy, user.FieldUpdatedBy, user.FieldAge:
 			values[i] = new(sql.NullInt64)
 		case user.FieldName, user.FieldPassowrd:
 			values[i] = new(sql.NullString)
@@ -112,6 +84,18 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.DeletedAt = value.Time
 			}
+		case user.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				u.CreatedBy = int(value.Int64)
+			}
+		case user.FieldUpdatedBy:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_by", values[i])
+			} else if value.Valid {
+				u.UpdatedBy = int(value.Int64)
+			}
 		case user.FieldAge:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field age", values[i])
@@ -133,16 +117,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
-}
-
-// QueryCreatedBy queries the "created_by" edge of the User entity.
-func (u *User) QueryCreatedBy() *UserQuery {
-	return NewUserClient(u.config).QueryCreatedBy(u)
-}
-
-// QueryUpdatedBy queries the "updated_by" edge of the User entity.
-func (u *User) QueryUpdatedBy() *UserQuery {
-	return NewUserClient(u.config).QueryUpdatedBy(u)
 }
 
 // Update returns a builder for updating this User.
@@ -176,6 +150,12 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("deleted_at=")
 	builder.WriteString(u.DeletedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("created_by=")
+	builder.WriteString(fmt.Sprintf("%v", u.CreatedBy))
+	builder.WriteString(", ")
+	builder.WriteString("updated_by=")
+	builder.WriteString(fmt.Sprintf("%v", u.UpdatedBy))
 	builder.WriteString(", ")
 	builder.WriteString("age=")
 	builder.WriteString(fmt.Sprintf("%v", u.Age))

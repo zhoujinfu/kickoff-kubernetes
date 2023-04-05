@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"entdemo/ent/predicate"
 	"entdemo/ent/user"
 	"fmt"
@@ -18,12 +17,10 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx           *QueryContext
-	order         []OrderFunc
-	inters        []Interceptor
-	predicates    []predicate.User
-	withCreatedBy *UserQuery
-	withUpdatedBy *UserQuery
+	ctx        *QueryContext
+	order      []OrderFunc
+	inters     []Interceptor
+	predicates []predicate.User
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,50 +55,6 @@ func (uq *UserQuery) Unique(unique bool) *UserQuery {
 func (uq *UserQuery) Order(o ...OrderFunc) *UserQuery {
 	uq.order = append(uq.order, o...)
 	return uq
-}
-
-// QueryCreatedBy chains the current query on the "created_by" edge.
-func (uq *UserQuery) QueryCreatedBy() *UserQuery {
-	query := (&UserClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, user.CreatedByTable, user.CreatedByPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryUpdatedBy chains the current query on the "updated_by" edge.
-func (uq *UserQuery) QueryUpdatedBy() *UserQuery {
-	query := (&UserClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, user.UpdatedByTable, user.UpdatedByPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first User entity from the query.
@@ -291,39 +244,15 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:        uq.config,
-		ctx:           uq.ctx.Clone(),
-		order:         append([]OrderFunc{}, uq.order...),
-		inters:        append([]Interceptor{}, uq.inters...),
-		predicates:    append([]predicate.User{}, uq.predicates...),
-		withCreatedBy: uq.withCreatedBy.Clone(),
-		withUpdatedBy: uq.withUpdatedBy.Clone(),
+		config:     uq.config,
+		ctx:        uq.ctx.Clone(),
+		order:      append([]OrderFunc{}, uq.order...),
+		inters:     append([]Interceptor{}, uq.inters...),
+		predicates: append([]predicate.User{}, uq.predicates...),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
 	}
-}
-
-// WithCreatedBy tells the query-builder to eager-load the nodes that are connected to
-// the "created_by" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithCreatedBy(opts ...func(*UserQuery)) *UserQuery {
-	query := (&UserClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withCreatedBy = query
-	return uq
-}
-
-// WithUpdatedBy tells the query-builder to eager-load the nodes that are connected to
-// the "updated_by" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithUpdatedBy(opts ...func(*UserQuery)) *UserQuery {
-	query := (&UserClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withUpdatedBy = query
-	return uq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -402,12 +331,8 @@ func (uq *UserQuery) prepareQuery(ctx context.Context) error {
 
 func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, error) {
 	var (
-		nodes       = []*User{}
-		_spec       = uq.querySpec()
-		loadedTypes = [2]bool{
-			uq.withCreatedBy != nil,
-			uq.withUpdatedBy != nil,
-		}
+		nodes = []*User{}
+		_spec = uq.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*User).scanValues(nil, columns)
@@ -415,7 +340,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &User{config: uq.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -427,144 +351,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := uq.withCreatedBy; query != nil {
-		if err := uq.loadCreatedBy(ctx, query, nodes,
-			func(n *User) { n.Edges.CreatedBy = []*User{} },
-			func(n *User, e *User) { n.Edges.CreatedBy = append(n.Edges.CreatedBy, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withUpdatedBy; query != nil {
-		if err := uq.loadUpdatedBy(ctx, query, nodes,
-			func(n *User) { n.Edges.UpdatedBy = []*User{} },
-			func(n *User, e *User) { n.Edges.UpdatedBy = append(n.Edges.UpdatedBy, e) }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (uq *UserQuery) loadCreatedBy(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*User)
-	nids := make(map[int]map[*User]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(user.CreatedByTable)
-		s.Join(joinT).On(s.C(user.FieldID), joinT.C(user.CreatedByPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(user.CreatedByPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(user.CreatedByPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := int(values[0].(*sql.NullInt64).Int64)
-				inValue := int(values[1].(*sql.NullInt64).Int64)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "created_by" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
-func (uq *UserQuery) loadUpdatedBy(ctx context.Context, query *UserQuery, nodes []*User, init func(*User), assign func(*User, *User)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*User)
-	nids := make(map[int]map[*User]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(user.UpdatedByTable)
-		s.Join(joinT).On(s.C(user.FieldID), joinT.C(user.UpdatedByPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(user.UpdatedByPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(user.UpdatedByPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := int(values[0].(*sql.NullInt64).Int64)
-				inValue := int(values[1].(*sql.NullInt64).Int64)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "updated_by" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
 }
 
 func (uq *UserQuery) sqlCount(ctx context.Context) (int, error) {

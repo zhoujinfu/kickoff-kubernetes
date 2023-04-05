@@ -62,6 +62,34 @@ func (uc *UserCreate) SetNillableDeletedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
+// SetCreatedBy sets the "created_by" field.
+func (uc *UserCreate) SetCreatedBy(i int) *UserCreate {
+	uc.mutation.SetCreatedBy(i)
+	return uc
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (uc *UserCreate) SetNillableCreatedBy(i *int) *UserCreate {
+	if i != nil {
+		uc.SetCreatedBy(*i)
+	}
+	return uc
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (uc *UserCreate) SetUpdatedBy(i int) *UserCreate {
+	uc.mutation.SetUpdatedBy(i)
+	return uc
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (uc *UserCreate) SetNillableUpdatedBy(i *int) *UserCreate {
+	if i != nil {
+		uc.SetUpdatedBy(*i)
+	}
+	return uc
+}
+
 // SetAge sets the "age" field.
 func (uc *UserCreate) SetAge(i int) *UserCreate {
 	uc.mutation.SetAge(i)
@@ -94,36 +122,6 @@ func (uc *UserCreate) SetNillablePassowrd(s *string) *UserCreate {
 		uc.SetPassowrd(*s)
 	}
 	return uc
-}
-
-// AddCreatedByIDs adds the "created_by" edge to the User entity by IDs.
-func (uc *UserCreate) AddCreatedByIDs(ids ...int) *UserCreate {
-	uc.mutation.AddCreatedByIDs(ids...)
-	return uc
-}
-
-// AddCreatedBy adds the "created_by" edges to the User entity.
-func (uc *UserCreate) AddCreatedBy(u ...*User) *UserCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uc.AddCreatedByIDs(ids...)
-}
-
-// AddUpdatedByIDs adds the "updated_by" edge to the User entity by IDs.
-func (uc *UserCreate) AddUpdatedByIDs(ids ...int) *UserCreate {
-	uc.mutation.AddUpdatedByIDs(ids...)
-	return uc
-}
-
-// AddUpdatedBy adds the "updated_by" edges to the User entity.
-func (uc *UserCreate) AddUpdatedBy(u ...*User) *UserCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uc.AddUpdatedByIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -173,6 +171,14 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultDeletedAt()
 		uc.mutation.SetDeletedAt(v)
 	}
+	if _, ok := uc.mutation.CreatedBy(); !ok {
+		v := user.DefaultCreatedBy
+		uc.mutation.SetCreatedBy(v)
+	}
+	if _, ok := uc.mutation.UpdatedBy(); !ok {
+		v := user.DefaultUpdatedBy
+		uc.mutation.SetUpdatedBy(v)
+	}
 	if _, ok := uc.mutation.Name(); !ok {
 		v := user.DefaultName
 		uc.mutation.SetName(v)
@@ -189,6 +195,12 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.DeletedAt(); !ok {
 		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "User.deleted_at"`)}
+	}
+	if _, ok := uc.mutation.CreatedBy(); !ok {
+		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "User.created_by"`)}
+	}
+	if _, ok := uc.mutation.UpdatedBy(); !ok {
+		return &ValidationError{Name: "updated_by", err: errors.New(`ent: missing required field "User.updated_by"`)}
 	}
 	if _, ok := uc.mutation.Age(); !ok {
 		return &ValidationError{Name: "age", err: errors.New(`ent: missing required field "User.age"`)}
@@ -239,6 +251,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = value
 	}
+	if value, ok := uc.mutation.CreatedBy(); ok {
+		_spec.SetField(user.FieldCreatedBy, field.TypeInt, value)
+		_node.CreatedBy = value
+	}
+	if value, ok := uc.mutation.UpdatedBy(); ok {
+		_spec.SetField(user.FieldUpdatedBy, field.TypeInt, value)
+		_node.UpdatedBy = value
+	}
 	if value, ok := uc.mutation.Age(); ok {
 		_spec.SetField(user.FieldAge, field.TypeInt, value)
 		_node.Age = value
@@ -250,38 +270,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Passowrd(); ok {
 		_spec.SetField(user.FieldPassowrd, field.TypeString, value)
 		_node.Passowrd = value
-	}
-	if nodes := uc.mutation.CreatedByIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   user.CreatedByTable,
-			Columns: user.CreatedByPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.UpdatedByIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   user.UpdatedByTable,
-			Columns: user.UpdatedByPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
