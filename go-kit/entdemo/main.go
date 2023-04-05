@@ -25,9 +25,37 @@ func main() {
 
 	var store Store
 	store = &sqlite3Store{client, context.Background()}
-	store = loggingMiddleware{store}
-	store.InsertUser("tinychou", 35)
-	store.QueryUserByName("tinychou")
+	store = loggingMiddleware{store} // AOP
+	var service UserService
+	service = userService{store}
+	service = emptyMiddleware{service} // AOP
+
+	service.InsertWithNameAge("tinychou", 35)
+	service.QueryByName("tinychou")
+}
+
+type UserService interface {
+	InsertWithNameAge(name string, age int) (*ent.User, error)
+	QueryByName(name string) (*ent.User, error)
+}
+type userService struct{ store Store }
+
+func (u userService) InsertWithNameAge(name string, age int) (*ent.User, error) {
+	return u.store.InsertUser(name, age)
+}
+func (u userService) QueryByName(name string) (*ent.User, error) {
+	return u.store.QueryUserByName(name)
+}
+
+type emptyMiddleware struct {
+	service UserService
+}
+
+func (mw emptyMiddleware) InsertWithNameAge(name string, age int) (*ent.User, error) {
+	return mw.service.InsertWithNameAge(name, age)
+}
+func (mw emptyMiddleware) QueryByName(name string) (*ent.User, error) {
+	return mw.service.QueryByName(name)
 }
 
 type Store interface {
