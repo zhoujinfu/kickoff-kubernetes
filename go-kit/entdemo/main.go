@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"entdemo/ent"
@@ -34,6 +35,8 @@ func main() {
 	service.InsertWithNameAge("admin1", 31)
 	// service.QueryByName("admin")
 	// service.QueryByDeleted(true)
+	log.Println("msg", "HTTP", "addr", ":8080")
+	log.Println("err", http.ListenAndServe(":8080", httpHandler()))
 }
 
 type UserService interface {
