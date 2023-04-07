@@ -22,7 +22,7 @@ const config: UserConfig = {
       targets: [
         { 
           src: './idl/**/*.proto',
-          dest: './dist/server/idl',
+          dest: './dist/server/idl/server',
           rename: '',
         }
       ],
